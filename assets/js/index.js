@@ -71,10 +71,19 @@ const searchEvent = async () => {
       formMessage.textContent = `Please enter a city name ! 😲`;
     }
 
+    // when there is some text entered and search button clicked
+    // when search button is clicked then check if the city entered is valid city
     const status = await isCityValid(searchVal);
 
     if (status === 404) {
       formMessage.textContent = `The city does not exist, please try again! 😲`;
+    }
+
+    if (status === 200) {
+      // store the valid form input to local storage
+
+      storeSearchHistory(searchVal);
+      generatBtns();
     }
   });
 
@@ -84,9 +93,6 @@ const searchEvent = async () => {
       formMessage.innerHTML = "";
     }
   });
-
-  // when there is some text entered and search button clicked
-  // when search button is clicked then check if the city entered is valid city
 };
 
 // function to check if the city is valid
@@ -105,6 +111,68 @@ const isCityValid = async (city) => {
 
 // function to store city searches to local storage
 
-const storeSearchHistory = (city) => {};
+const storeSearchHistory = (city) => {
+  console.log("Search has been saved to local storage");
+
+  if (city) {
+    // pushing this to the array
+    citySearches.push({ city: city });
+  }
+
+  // saving the array to local storage
+
+  window.localStorage.setItem("searches", JSON.stringify(citySearches));
+};
+
+// function to retrieve all previous search history from local storage
+
+const getSearches = () => {
+  // ternary operator evaluates truthy/falsy - searches local storage exists then it returns the parsed object to variable else it will return an empty array
+  const getParsedSearches = window.localStorage.getItem("searches")
+    ? JSON.parse(window.localStorage.getItem("searches"))
+    : [];
+
+  // lets return the parsed searches to this function
+
+  return getParsedSearches;
+};
+
+// function to generate the buttons on the page
+
+const generatBtns = () => {
+  // returns all the parsed searches to this variable
+  const searches = getSearches();
+
+  // we should only generate the button markup when there is a search history
+  if (searches.length !== 0) {
+    // loops through the array of objects
+    for (search of searches) {
+      const city = search.city;
+
+      //  creating the anchor element
+
+      const a = document.createElement("a");
+
+      // creating the elements textNode
+
+      const aText = document.createTextNode(`${city}`);
+
+      // appending textNode to the element
+      a.appendChild(aText);
+
+      //  adding the Bootstrap classes to the element
+
+      a.classList.add("btn", "btn-primary", "mb-3");
+
+      //   setting an attribute
+      a.setAttribute("role", "button");
+
+      // appending the element to the page
+      searchLinksEl.append(a);
+    }
+  }
+};
+
+// generatBtns();
 
 searchEvent();
