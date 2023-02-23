@@ -12,6 +12,7 @@
 - when the page is first loaded a "displayAllBtns" is invoked that takes in a function that returns the parsed array of all the current searches stored within local storage and will loop through this array of objects and render the buttons on the page. 
 - when a user inputs a valid city search: a todays weather card will be displayed including a five day weather forecast.
     - this is achieved by calling the openweatherapi and on recieving a valid response: the first element of the response array containing all the properties needed, will be the todays forecast whereas looping through the rest of the array and only retrieving the correct element for each day of the five day weather forecast is then displayed in to weather cards. 
+    - before doing so we need to get the latitude and longitude to pass in to the openweatherapi to return a valid json object with the weather forecast data
 */
 
 console.log("index.js file loaded");
@@ -21,6 +22,8 @@ console.log("index.js file loaded");
 const apiKey = "d0af7ceac9a3501bc47a8577610395a2";
 
 const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
+
+const apiForecast = "https://api.openweathermap.org/data/2.5/forecast?";
 
 // creating array to hold the users city searches
 
@@ -190,6 +193,62 @@ const generateBtn = (city) => {
     }
   }
 };
+
+// function to get json data from the openweatherapi
+
+const getJSON = async (city) => {
+  try {
+    // setting up the queryURL
+
+    const queryURL = `${apiUrl}${city}&appid=${apiKey}`;
+
+    const response = await fetch(queryURL, { method: "GET" });
+
+    console.log(response);
+
+    // we need to handle an error here
+
+    if (response.status === 401) {
+      throw new Error(response.status);
+    }
+
+    const dataJSON = await response.json();
+
+    console.log(dataJSON);
+
+    const { lon, lat } = dataJSON.coord;
+
+    console.log(lon, lat);
+
+    const urlForecast = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+
+    const forecastData = await fetch(urlForecast, { method: "GET" });
+
+    // we need to handle an error here
+
+    if (forecastData.status === 404) {
+      throw new Error(forecastData.status);
+    }
+
+    console.log(forecastData);
+
+    const forecastJSON = await forecastData.json();
+
+    console.log(forecastJSON);
+
+    return forecastJSON;
+  } catch (error) {
+    console.log(`${error}`);
+
+    if (error === "Error: 401") {
+      formMessage.textContent = ` ${error}: Invalid API key 🤬`;
+    } else {
+      formMessage.textContent = ` ${error}: Something went wrong 🤬`;
+    }
+  }
+};
+
+getJSON("letchworth");
 
 // creating a function to listen to the form button
 
