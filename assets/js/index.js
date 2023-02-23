@@ -1,3 +1,19 @@
+/*
+ - create global variables that query select all the neccessary elements from the page
+ - initialise the date with momentjs api and pass to a variable in formatted form
+ - hide all the search links and the weather cards from the page
+ - create a function "searchEvent" that when invoked will listen to the search button on the page
+    - this function will take in the form input, check if the string is valid by testing it against the response from the openweather api and if response.ok is false then handle the error as a message that appears under the form input element on the page. If response.ok is true then save the search to local storage. 
+    - To save the search string to local storage create a array variable that holds the object with the city name, this variable will be a ternary operator that if evaluates to true returns the parsed object from local storage or if false returns the empty array. 
+    - before storing to local storage we need to check if that city already exists and only push it to the array if it does not exist. 
+    - when the function is invoked and city is validated by checking it does not exist, it should be pushed to the array and saved to local storage. 
+- after the search has been stored to local storage the "generateBtns" function should be invoked.
+    - this function should only dynamically create the button for the page and append it to the "searchLinksEl" element in question. 
+- when the page is first loaded a "displayAllBtns" is invoked that takes in a function that returns the parsed array of all the current searches stored within local storage and will loop through this array of objects and render the buttons on the page. 
+- when a user inputs a valid city search: a todays weather card will be displayed including a five day weather forecast.
+    - this is achieved by calling the openweatherapi and on recieving a valid response: the first element of the response array containing all the properties needed, will be the todays forecast whereas looping through the rest of the array and only retrieving the correct element for each day of the five day weather forecast is then displayed in to weather cards. 
+*/
+
 console.log("index.js file loaded");
 
 // Global variables
@@ -5,12 +21,6 @@ console.log("index.js file loaded");
 const apiKey = "d0af7ceac9a3501bc47a8577610395a2";
 
 const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
-
-// creating array to hold the users city searches
-
-const citySearches = window.localStorage.getItem("cities")
-  ? JSON.parse(window.localStorage.getItem("cities"))
-  : [];
 
 // Query selecting page elements
 
@@ -53,6 +63,88 @@ searchLinksEl.innerHTML = "";
 
 formMessage.innerHTML = "";
 
+// helper functions
+
+// function to check if the city is valid
+
+const isCityValid = async (city) => {
+  const queryUrl = `${apiUrl}${city}&appid=${apiKey}`;
+
+  const request = new Request(queryUrl, { method: "GET" });
+
+  const response = await fetch(request);
+
+  console.log(response);
+
+  return response.status;
+};
+
+// function to retrieve all previous search history from local storage
+
+const getSearches = () => {
+  // ternary operator evaluates truthy/falsy - searches local storage exists then it returns the parsed object to variable else it will return an empty array
+  const getParsedSearches = window.localStorage.getItem("searches")
+    ? JSON.parse(window.localStorage.getItem("searches"))
+    : [];
+
+  console.log(getParsedSearches);
+
+  // lets return the parsed searches to this function
+
+  return getParsedSearches;
+};
+
+// function to store city searches to local storage
+
+const storeSearchHistory = (city) => {
+  // creating array to hold the users city searches
+
+  const citySearches = window.localStorage.getItem("searches")
+    ? JSON.parse(window.localStorage.getItem("searches"))
+    : [];
+
+  console.log(citySearches);
+  console.log(city);
+
+  if (city) {
+    // we should only add the city to local storage if it does not exist in local storage
+    const exist = citySearches.findIndex((value) => value.city === city) > -1;
+
+    console.log("exists", exist);
+
+    if (!exist) {
+      // pushing this to the array
+      citySearches.push({ city: city });
+
+      // saving the array to local storage
+
+      window.localStorage.setItem("searches", JSON.stringify(citySearches));
+      console.log(`${city} has been saved to local storage`);
+    }
+  }
+};
+
+// function to generate the buttons on the page
+
+const generatBtn = (city) => {
+  // we should check if we have a city passed to this function and if true generate the button
+
+  if (city) {
+    //  creating the anchor element
+    const a = document.createElement("a");
+    // creating the elements textNode
+    const aText = document.createTextNode(`${city}`);
+    // appending textNode to the element
+    a.appendChild(aText);
+    //  adding the Bootstrap classes to the element
+    a.classList.add("btn", "btn-primary", "mb-3");
+    //   setting an attribute
+    a.setAttribute("role", "button");
+    // appending the element to the page
+    searchLinksEl.append(a);
+  }
+};
+
 // creating a function to listen to the form button
 
 const searchEvent = async () => {
@@ -81,9 +173,9 @@ const searchEvent = async () => {
 
     if (status === 200) {
       // store the valid form input to local storage
-
       storeSearchHistory(searchVal);
-      generatBtns();
+      //generate the button element
+      generatBtn(searchVal);
     }
   });
 
@@ -94,85 +186,5 @@ const searchEvent = async () => {
     }
   });
 };
-
-// function to check if the city is valid
-
-const isCityValid = async (city) => {
-  const queryUrl = `${apiUrl}${city}&appid=${apiKey}`;
-
-  const request = new Request(queryUrl, { method: "GET" });
-
-  const response = await fetch(request);
-
-  console.log(response);
-
-  return response.status;
-};
-
-// function to store city searches to local storage
-
-const storeSearchHistory = (city) => {
-  console.log("Search has been saved to local storage");
-
-  if (city) {
-    // pushing this to the array
-    citySearches.push({ city: city });
-  }
-
-  // saving the array to local storage
-
-  window.localStorage.setItem("searches", JSON.stringify(citySearches));
-};
-
-// function to retrieve all previous search history from local storage
-
-const getSearches = () => {
-  // ternary operator evaluates truthy/falsy - searches local storage exists then it returns the parsed object to variable else it will return an empty array
-  const getParsedSearches = window.localStorage.getItem("searches")
-    ? JSON.parse(window.localStorage.getItem("searches"))
-    : [];
-
-  // lets return the parsed searches to this function
-
-  return getParsedSearches;
-};
-
-// function to generate the buttons on the page
-
-const generatBtns = () => {
-  // returns all the parsed searches to this variable
-  const searches = getSearches();
-
-  // we should only generate the button markup when there is a search history
-  if (searches.length !== 0) {
-    // loops through the array of objects
-    for (search of searches) {
-      const city = search.city;
-
-      //  creating the anchor element
-
-      const a = document.createElement("a");
-
-      // creating the elements textNode
-
-      const aText = document.createTextNode(`${city}`);
-
-      // appending textNode to the element
-      a.appendChild(aText);
-
-      //  adding the Bootstrap classes to the element
-
-      a.classList.add("btn", "btn-primary", "mb-3");
-
-      //   setting an attribute
-      a.setAttribute("role", "button");
-
-      // appending the element to the page
-      searchLinksEl.append(a);
-    }
-  }
-};
-
-// generatBtns();
 
 searchEvent();
