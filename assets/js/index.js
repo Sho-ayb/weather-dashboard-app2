@@ -218,6 +218,14 @@ const searchEvent = async () => {
     }
 
     if (status === 200) {
+      // if the user enters the same search that already exists form message is displayed to the page
+      const alreadySearched = citySearches.some(
+        (element) => element.city === searchVal
+      );
+
+      if (alreadySearched) {
+        formMessage.textContent = `You have already searched for that city! 😯`;
+      }
       // N.b. we need to execute the generateBtn function before saving to local storage
       //generate the button element
       generateBtn(searchVal);
