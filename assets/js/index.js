@@ -22,6 +22,12 @@ const apiKey = "d0af7ceac9a3501bc47a8577610395a2";
 
 const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
 
+// creating array to hold the users city searches
+
+const citySearches = window.localStorage.getItem("searches")
+  ? JSON.parse(window.localStorage.getItem("searches"))
+  : [];
+
 // Query selecting page elements
 
 const cardContainerEl = document.getElementsByClassName("card__container");
@@ -97,11 +103,11 @@ const getSearches = () => {
 // function to store city searches to local storage
 
 const storeSearchHistory = (city) => {
-  // creating array to hold the users city searches
+  //   // creating array to hold the users city searches
 
-  const citySearches = window.localStorage.getItem("searches")
-    ? JSON.parse(window.localStorage.getItem("searches"))
-    : [];
+  //   const citySearches = window.localStorage.getItem("searches")
+  //     ? JSON.parse(window.localStorage.getItem("searches"))
+  //     : [];
 
   console.log(citySearches);
   console.log(city);
@@ -126,22 +132,31 @@ const storeSearchHistory = (city) => {
 
 // function to generate the buttons on the page
 
-const generatBtn = (city) => {
+const generateBtn = (city) => {
+  console.log("inside of generatBtn function");
   // we should check if we have a city passed to this function and if true generate the button
 
   if (city) {
-    //  creating the anchor element
-    const a = document.createElement("a");
-    // creating the elements textNode
-    const aText = document.createTextNode(`${city}`);
-    // appending textNode to the element
-    a.appendChild(aText);
-    //  adding the Bootstrap classes to the element
-    a.classList.add("btn", "btn-primary", "mb-3");
-    //   setting an attribute
-    a.setAttribute("role", "button");
-    // appending the element to the page
-    searchLinksEl.append(a);
+    // however before generating the button element, we need to check if the search already exists within local storage and only append a new button to the page when there is no city that matches what is stored within local storage - we can use the findIndex method above again for this method
+
+    const exist = citySearches.findIndex((value) => value.city === city) > -1;
+
+    console.log("exists", exist);
+
+    if (!exist) {
+      //  creating the anchor element
+      const a = document.createElement("a");
+      // creating the elements textNode
+      const aText = document.createTextNode(`${city}`);
+      // appending textNode to the element
+      a.appendChild(aText);
+      //  adding the Bootstrap classes to the element
+      a.classList.add("btn", "btn-primary", "mb-3");
+      //   setting an attribute
+      a.setAttribute("role", "button");
+      // appending the element to the page
+      searchLinksEl.append(a);
+    }
   }
 };
 
@@ -172,10 +187,11 @@ const searchEvent = async () => {
     }
 
     if (status === 200) {
+      // N.b. we need to execute the generateBtn function before saving to local storage
+      //generate the button element
+      generateBtn(searchVal);
       // store the valid form input to local storage
       storeSearchHistory(searchVal);
-      //generate the button element
-      generatBtn(searchVal);
     }
   });
 
