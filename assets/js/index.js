@@ -7,7 +7,7 @@
     - To save the search string to local storage create a array variable that holds the object with the city name, this variable will be a ternary operator that if evaluates to true returns the parsed object from local storage or if false returns the empty array. 
     - before storing to local storage we need to check if that city already exists and only push it to the array if it does not exist. 
     - when the function is invoked and city is validated by checking it does not exist, it should be pushed to the array and saved to local storage. 
-- after the search has been stored to local storage the "generateBtns" function should be invoked.
+- after the search has been stored to local storage the "generateBtn" function should be invoked.
     - this function should only dynamically create the button for the page and append it to the "searchLinksEl" element in question. 
 - when the page is first loaded a "displayAllBtns" is invoked that takes in a function that returns the parsed array of all the current searches stored within local storage and will loop through this array of objects and render the buttons on the page. 
 - when a user inputs a valid city search: a todays weather card will be displayed including a five day weather forecast.
@@ -100,15 +100,27 @@ const getSearches = () => {
   return getParsedSearches;
 };
 
+const displayAllBtns = (parsedArr) => {
+  console.log("inside of displayAllBtns function");
+
+  const searches = parsedArr;
+
+  // the above is the parsed array of objects returned from the getSearches function,
+  // we need to loop through this array of objects and call 'generateAllBtns' and passing in the city property value to the function to generate all the buttons on the page
+
+  for (search of searches) {
+    // passing the city value to the variable
+    const city = search.city;
+
+    // lets invoke the generateBtn function with this value
+
+    generateAllBtns(city);
+  }
+};
+
 // function to store city searches to local storage
 
 const storeSearchHistory = (city) => {
-  //   // creating array to hold the users city searches
-
-  //   const citySearches = window.localStorage.getItem("searches")
-  //     ? JSON.parse(window.localStorage.getItem("searches"))
-  //     : [];
-
   console.log(citySearches);
   console.log(city);
 
@@ -130,7 +142,26 @@ const storeSearchHistory = (city) => {
   }
 };
 
-// function to generate the buttons on the page
+// function to generate all the buttons currently stored to local storage
+
+const generateAllBtns = (city) => {
+  if (city) {
+    //  creating the anchor element
+    const a = document.createElement("a");
+    // creating the elements textNode
+    const aText = document.createTextNode(`${city}`);
+    // appending textNode to the element
+    a.appendChild(aText);
+    //  adding the Bootstrap classes to the element
+    a.classList.add("btn", "btn-primary", "mb-3");
+    //   setting an attribute
+    a.setAttribute("role", "button");
+    // appending the element to the page
+    searchLinksEl.append(a);
+  }
+};
+
+// function to generate a single button on the page at a time
 
 const generateBtn = (city) => {
   console.log("inside of generatBtn function");
@@ -204,3 +235,4 @@ const searchEvent = async () => {
 };
 
 searchEvent();
+displayAllBtns(getSearches());
