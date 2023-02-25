@@ -269,6 +269,7 @@ const displayTodayWeather = async (payload) => {
 
   // using momentjs to parse the date and extract only the time
   const forecastTime = moment(dt_txt).format("HH:mm");
+  const day = moment(dt_txt).format("dddd");
 
   console.log(forecastTime);
 
@@ -290,7 +291,7 @@ const displayTodayWeather = async (payload) => {
   <div class="card-body p-4">
     <div class="d-flex">
       <h6 class="flex-grow-1">${city.name}</h6>
-      <h6>Forecast until: ${forecastTime}</h6>
+      <h6>${day} until: ${forecastTime}</h6>
     </div>
 
     <div class="d-flex flex-column text-center mt-5 mb-4">
@@ -357,11 +358,12 @@ const displayFiveDayWeather = async (payload) => {
   const city = payload.city;
   const weatherData = payload.list;
 
-  for (let i = 5; i < weatherData.length; i = i + 8) {
+  for (let i = 5; i < 40; i = i + 8) {
     const { dt_txt, main, weather, wind } = weatherData[i];
 
     // using momentjs to parse the date and extract only the time
     const forecastTime = moment(dt_txt).format("HH:mm");
+    const day = moment(dt_txt).format("dddd");
 
     console.log(forecastTime);
 
@@ -383,7 +385,7 @@ const displayFiveDayWeather = async (payload) => {
   <div class="card-body p-4">
     <div class="d-flex">
       <h6 class="flex-grow-1">${city.name}</h6>
-      <h6>Forecast until: ${forecastTime}</h6>
+      <h6>${day} until: ${forecastTime}</h6>
     </div>
 
     <div class="d-flex flex-column text-center mt-5 mb-4">
