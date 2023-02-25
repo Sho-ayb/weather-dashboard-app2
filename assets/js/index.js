@@ -207,8 +207,6 @@ const getJSON = async (city) => {
 
     const response = await fetch(queryURL, { method: "GET" });
 
-    console.log(response);
-
     // we need to handle an error here
 
     if (response.status === 401) {
@@ -234,8 +232,6 @@ const getJSON = async (city) => {
     }
 
     const forecastDataJSON = await forecastData.json();
-
-    console.log(forecastDataJSON);
 
     return forecastDataJSON;
   } catch (error) {
@@ -343,6 +339,102 @@ const displayTodayWeather = async (payload) => {
   cardEl[0].appendChild(cardFragment);
 };
 
+// function to display five day weather forecast
+
+const displayFiveDayWeather = async (payload) => {
+  console.log("Displaying five day weather card");
+
+  // clearing the element when this function is executed
+  for (card of cardEl) {
+    card.innerHTML = "";
+  }
+
+  // using await here to return the promise fulfilled
+  payload = await payload;
+
+  console.log(payload);
+
+  const city = payload.city;
+  const weatherData = payload.list;
+
+  for (let i = 5; i < weatherData.length; i = i + 8) {
+    const { dt_txt, main, weather, wind } = weatherData[i];
+
+    // using momentjs to parse the date and extract only the time
+    const forecastTime = moment(dt_txt).format("HH:mm");
+
+    console.log(forecastTime);
+
+    console.log(
+      "city",
+      city,
+      "date time",
+      dt_txt,
+      "main",
+      main,
+      "weather",
+      weather,
+      "wind",
+      wind
+    );
+
+    const markup = `
+    
+  <div class="card-body p-4">
+    <div class="d-flex">
+      <h6 class="flex-grow-1">${city.name}</h6>
+      <h6>Forecast until: ${forecastTime}</h6>
+    </div>
+
+    <div class="d-flex flex-column text-center mt-5 mb-4">
+      <h6
+        class="display-4 mb-0 font-weight-bold"
+        style="color: #1c2331"
+      >
+      ${main.temp.toFixed(0)}°C
+      </h6>
+      <span class="small" style="color: #868b94">${
+        weather[0].description
+      }</span>
+    </div>
+
+    <div class="d-flex align-items-center">
+      <div class="flex-grow-1" style="font-size: 1rem">
+        <div>
+          <i class="fa-solid fa-sun" style="color: #868b94"></i>
+          <span class="ms-1">${main.temp.toFixed(0)} &#176; deg</span>
+        </div>
+        <div>
+          <i class="fas fa-wind fa-fw" style="color: #868b94"></i>
+          <span class="ms-1"> ${wind.speed.toFixed(0)} km/h </span>
+        </div>
+        <div>
+          <i class="fa-solid fa-water" style="color: #868b94"></i>
+          <span class="ms-1"> ${main.humidity}% </span>
+        </div>
+      </div>
+      <div>
+        <img
+          src=" http://openweathermap.org/img/wn/${weather[0].icon}@2x.png"
+          class="img-fluid" alt="weather-icon" width="150px"
+         />
+      </div>
+    </div>
+  </div>
+
+    
+    `;
+
+    // without using the methods below the markup will be appended to the element as a string
+
+    const cardFragment = document
+      .createRange()
+      .createContextualFragment(markup);
+
+    cardEl[1].appendChild(cardFragment);
+  }
+};
+
 // creating a function to listen to the form button
 
 const searchEvent = async () => {
@@ -387,6 +479,7 @@ const searchEvent = async () => {
       if (!alreadySearched) {
         // invoking the function to display the card for todays forecast to the page
         displayTodayWeather(getJSON(searchVal));
+        displayFiveDayWeather(getJSON(searchVal));
       }
     }
   });
