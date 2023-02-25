@@ -520,5 +520,11 @@ const searchEvent = async () => {
   });
 };
 
-searchEvent();
-displayAllBtns(getSearches());
+// function to run all other functions
+
+const init = () => {
+  searchEvent();
+  displayAllBtns(getSearches());
+};
+
+init();
