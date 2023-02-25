@@ -162,6 +162,8 @@ const generateAllBtns = (city) => {
     a.classList.add("btn", "btn-primary", "mb-3");
     //   setting an attribute
     a.setAttribute("role", "button");
+    // setting a custom data attr
+    a.setAttribute("data-city", city);
     // appending the element to the page
     searchLinksEl.append(a);
   }
@@ -191,6 +193,8 @@ const generateBtn = (city) => {
       a.classList.add("btn", "btn-primary", "mb-3");
       //   setting an attribute
       a.setAttribute("role", "button");
+      // setting a custom data attr
+      a.setAttribute("data-city", city);
       // appending the element to the page
       searchLinksEl.append(a);
     }
@@ -436,6 +440,28 @@ const displayFiveDayWeather = async (payload) => {
     cardEl[1].appendChild(cardFragment);
   }
 };
+
+// function to listen to search links
+
+const searchBtns = () => {
+  searchLinksEl.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    console.log("search link clicked");
+
+    // getting the target link clicked on
+    linkTarget = e.target;
+    // getting the location searched for via custom data attr
+    const city = linkTarget.dataset.city;
+
+    // invoking both functions to display todays forecast and five day forecast
+
+    displayTodayWeather(getJSON(city));
+    displayFiveDayWeather(getJSON(city));
+  });
+};
+
+searchBtns();
 
 // creating a function to listen to the form button
 
