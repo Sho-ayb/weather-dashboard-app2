@@ -33,7 +33,9 @@ const citySearches = window.localStorage.getItem("searches")
 
 // Query selecting page elements
 
-const cardContainerEl = document.getElementsByClassName("card__container");
+// const cardContainerEl = document.getElementsByClassName("card__container");
+
+const cardEl = document.querySelectorAll(".card");
 
 const searchLinksEl = document.querySelector(".search__links");
 
@@ -43,7 +45,8 @@ const searchInputEl = document.getElementById("search__input");
 
 const formMessage = document.querySelector(".form__message");
 
-console.log(cardContainerEl);
+// console.log(cardContainerEl);
+console.log(cardEl);
 console.log(searchLinksEl);
 console.log(searchBtnEl);
 console.log(searchInputEl);
@@ -62,9 +65,9 @@ const dateEl = document.querySelector(".date");
 
 dateEl.textContent = todaysDt;
 
-// hiding the hard coded search links, weather cards and the form message from the page
+// hiding the hard coded , weather cards, search links and the form message from the page
 
-for (card of cardContainerEl) {
+for (card of cardEl) {
   card.innerHTML = "";
 }
 
@@ -230,13 +233,11 @@ const getJSON = async (city) => {
       throw new Error(forecastData.status);
     }
 
-    console.log(forecastData);
+    const forecastDataJSON = await forecastData.json();
 
-    const forecastJSON = await forecastData.json();
+    console.log(forecastDataJSON);
 
-    console.log(forecastJSON);
-
-    return forecastJSON;
+    return forecastDataJSON;
   } catch (error) {
     console.log(`${error}`);
 
@@ -248,7 +249,99 @@ const getJSON = async (city) => {
   }
 };
 
-getJSON("letchworth");
+// N.B. i attempted to convert the above the json to string using json.stringify and then returning this to the function, and on recieving the stringified json i attempted to convert back to json, however i got an error -  which according to stack overflow https://stackoverflow.com/questions/38380462/syntaxerror-unexpected-token-o-in-json-at-position-1 is an error caused when the object you are passing is already an object. The solution was simply to pass the json object and since the json is a promise we need to attach an await for the promise to return fulfilled.
+
+// function to display todays weather card
+
+const displayTodayWeather = async (payload) => {
+  console.log("Displaying todays weather card");
+
+  // clearing the element when this function is executed
+  for (card of cardEl) {
+    card.innerHTML = "";
+  }
+
+  // using await here to return the promise fulfilled
+  payload = await payload;
+
+  console.log(payload);
+
+  const city = payload.city;
+  const weatherData = payload.list;
+
+  const { dt_txt, main, weather, wind } = weatherData[0];
+
+  // using momentjs to parse the date and extract only the time
+  const forecastTime = moment(dt_txt).format("HH:mm");
+
+  console.log(forecastTime);
+
+  console.log(
+    "city",
+    city,
+    "date time",
+    dt_txt,
+    "main",
+    main,
+    "weather",
+    weather,
+    "wind",
+    wind
+  );
+
+  const markup = `
+    
+  <div class="card-body p-4">
+    <div class="d-flex">
+      <h6 class="flex-grow-1">${city.name}</h6>
+      <h6>Forecast until: ${forecastTime}</h6>
+    </div>
+
+    <div class="d-flex flex-column text-center mt-5 mb-4">
+      <h6
+        class="display-4 mb-0 font-weight-bold"
+        style="color: #1c2331"
+      >
+      ${main.temp.toFixed(0)}°C
+      </h6>
+      <span class="small" style="color: #868b94">${
+        weather[0].description
+      }</span>
+    </div>
+
+    <div class="d-flex align-items-center">
+      <div class="flex-grow-1" style="font-size: 1rem">
+        <div>
+          <i class="fa-solid fa-sun" style="color: #868b94"></i>
+          <span class="ms-1">${main.temp.toFixed(0)} &#176; deg</span>
+        </div>
+        <div>
+          <i class="fas fa-wind fa-fw" style="color: #868b94"></i>
+          <span class="ms-1"> ${wind.speed.toFixed(0)} km/h </span>
+        </div>
+        <div>
+          <i class="fa-solid fa-water" style="color: #868b94"></i>
+          <span class="ms-1"> ${main.humidity}% </span>
+        </div>
+      </div>
+      <div>
+        <img
+          src=" http://openweathermap.org/img/wn/${weather[0].icon}@2x.png"
+          class="img-fluid" alt="weather-icon" width="150px"
+         />
+      </div>
+    </div>
+  </div>
+
+    
+    `;
+
+  // without using the methods below the markup will be appended to the element as a string
+
+  const cardFragment = document.createRange().createContextualFragment(markup);
+
+  cardEl[0].appendChild(cardFragment);
+};
 
 // creating a function to listen to the form button
 
@@ -290,6 +383,11 @@ const searchEvent = async () => {
       generateBtn(searchVal);
       // store the valid form input to local storage
       storeSearchHistory(searchVal);
+
+      if (!alreadySearched) {
+        // invoking the function to display the card for todays forecast to the page
+        displayTodayWeather(getJSON(searchVal));
+      }
     }
   });
 
